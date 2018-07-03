@@ -9,7 +9,7 @@
 	--[[
 		Available Events:
 			Died: Args (Player, Character)
-			Respawned: Args(Player, (NEW)Character)
+			Spawned: Args(Player, (NEW)Character)
 			Said: Args(Player, Message)
 			TeamJoin: Args(Player, Team)
 			TeamLeave: Args(Player, Team)
@@ -39,7 +39,7 @@ local SelfClient = {
 	Events = {
 		Said = {},
 		Died = {},
-		Respawned = {},
+		Spawned = {},
 		TeamJoin = {},
 		TeamLeave = {},
 		ReceivedTool = {},
@@ -87,11 +87,11 @@ function SelfClient:UpdateDied()
 	end
 end
 
-function SelfClient:UpdateRespawned()
-	self:DisconnectEvents("Respawned")
+function SelfClient:UpdateSpawned()
+	self:DisconnectEvents("Spawned")
 	for i,v in pairs(game:GetService("Players"):GetPlayers()) do
-		self.Events.Respawned[#self.Events.Respawned] = v.CharacterAdded:Connect(function(NewCharacter)
-			self:Fire("Respawned", v, NewCharacter)
+		self.Events.Spawned[#self.Events.Spawned] = v.CharacterAdded:Connect(function(NewCharacter)
+			self:Fire("Spawned", v, NewCharacter)
 		end)
 	end
 end
@@ -193,7 +193,7 @@ function Module.Client()
 			SelfClient:UpdateEquipped()
 			SelfClient:UpdateTeamJoin()
 			SelfClient:UpdateTeamLeave()
-			SelfClient:UpdateRespawned()
+			SelfClient:UpdateSpawned()
 			SelfClient:UpdateReceivedTool()
 			SelfClient:UpdateSaid()
 		end
