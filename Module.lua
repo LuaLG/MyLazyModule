@@ -154,7 +154,7 @@ function SelfClient:UpdateEquipped()
 end
 
 function SelfClient:Update()
-	-- More coming soon
+	-- More coming soon!
 end
 
 function SelfClient:GetPlayer(Who)
