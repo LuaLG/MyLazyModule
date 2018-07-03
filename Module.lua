@@ -14,6 +14,7 @@
 			TeamJoin: Args(Player, Team)
 			TeamLeave: Args(Player, Team)
 			ReceivedTool: Args(Player, Tool)
+			Equipped: Args(Player, Tool)
 			
 		More events will be available as time progresses.
 		Example setup:
@@ -41,7 +42,8 @@ local SelfClient = {
 		Respawned = {},
 		TeamJoin = {},
 		TeamLeave = {},
-		RecievedTool = {},
+		ReceivedTool = {},
+		Equipped = {},
 	}
 }
 
@@ -89,7 +91,7 @@ function SelfClient:UpdateRespawned()
 	self:DisconnectEvents("Respawned")
 	for i,v in pairs(game:GetService("Players"):GetPlayers()) do
 		self.Events.Respawned[#self.Events.Respawned] = v.CharacterAdded:Connect(function(NewCharacter)
-			SelfClient:Fire("Respawned", v, NewCharacter)
+			self:Fire("Respawned", v, NewCharacter)
 		end)
 	end
 end
@@ -98,7 +100,7 @@ function SelfClient:UpdateSaid()
 	self:DisconnectEvents("Said")
 	for i,v in pairs(game:GetService("Players"):GetPlayers()) do
 		self.Events.Said[#self.Events.Said] = v.Chatted:Connect(function(Message)
-			SelfClient:Fire("Said", v, Message)
+			self:Fire("Said", v, Message)
 		end)
 	end
 end
@@ -108,7 +110,7 @@ function SelfClient:UpdateTeamJoin()
 	for i,v in pairs(game:GetService("Teams"):GetChildren()) do
 		if v:IsA("Team") then
 			self.Events.TeamJoin[#self.Events.TeamJoin+1] = v.PlayerAdded:Connect(function(Player)
-				SelfClient:Fire("TeamJoin", Player, v)
+				self:Fire("TeamJoin", Player, v)
 			end)
 		end
 	end
@@ -119,19 +121,32 @@ function SelfClient:UpdateTeamLeave()
 	for i,v in pairs(game:GetService("Teams"):GetChildren()) do
 		if v:IsA("Team") then
 			self.Events.TeamLeave[#self.Events.TeamLeave+1] = v.PlayerRemoved:Connect(function(Player)
-				SelfClient:Fire("TeamLeave", Player, v)
+				self:Fire("TeamLeave", Player, v)
 			end)
 		end
 	end
 end
 
-function SelfClient:UpdateRecievedTool()
-	self:DisconnectEvents("RecievedTool")
+function SelfClient:UpdateReceivedTool()
+	self:DisconnectEvents("ReceivedTool")
 	for i,v in pairs(game:GetService("Players"):GetPlayers()) do
 		if v:FindFirstChild("Backpack") then
-			self.Events.RecievedTool[#self.Events.RecievedTool] = v.Backpack.ChildAdded:Connect(function(Tool)
+			self.Events.ReceivedTool[#self.Events.ReceivedTool] = v.Backpack.ChildAdded:Connect(function(Tool)
 				if Tool:IsA("Tool") then
-					SelfClient:Fire("ToolRecieved", v, Tool)
+					self:Fire("ToolReceived", v, Tool)
+				end
+			end)
+		end
+	end
+end
+
+function SelfClient:UpdateEquipped()
+	self:DisconnectEvents("Equipped")
+	for i,v in pairs(game:GetService("Players"):GetPlayers()) do
+		if v.Character then
+			self.Events.Equipped[#self.Events.Equipped+1] = v.Character.ChildAdded:Connect(function(Obj)
+				if Obj:IsA("Tool") then
+					self:Fire("Equipped", v, Obj)
 				end
 			end)
 		end
@@ -139,7 +154,7 @@ function SelfClient:UpdateRecievedTool()
 end
 
 function SelfClient:Update()
-	
+	-- More coming soon
 end
 
 function SelfClient:GetPlayer(Who)
@@ -175,10 +190,11 @@ function Module.Client()
 	coroutine.wrap(function()
 		while game:GetService("RunService").Stepped:Wait() do
 			SelfClient:UpdateDied()
+			SelfClient:UpdateEquipped()
 			SelfClient:UpdateTeamJoin()
 			SelfClient:UpdateTeamLeave()
 			SelfClient:UpdateRespawned()
-			SelfClient:UpdateRecievedTool()
+			SelfClient:UpdateReceivedTool()
 			SelfClient:UpdateSaid()
 		end
 	end)()
